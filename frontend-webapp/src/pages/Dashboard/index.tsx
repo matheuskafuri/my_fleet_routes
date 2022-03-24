@@ -1,94 +1,43 @@
-import { Button, Grid, IconButton, TextField } from '@mui/material';
-import AddLocationIcon from '@mui/icons-material/AddLocation';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { Sidebar } from "../../components/SideBar";
-import { LocationInfo, useLocationInfo } from '../../hooks/location';
+import { useEffect, useState } from 'react';
+import { Grid } from "@mui/material";
+import CircularProgress from '@mui/material/CircularProgress';
 import { ContainerTest, FormContainer, MapBox } from "./style";
-import { useState } from 'react';
+
+import { useRouteInfo } from '../../hooks/route';
 import Map from '../../components/Map';
-
-type Inputs = {
-  city: string;
-  state: string;
-};
-
-type RouteData = {
-  route_id :"string",
-  initLat:number,
-  finalLat?:number,
-  initLong:number,
-  finalLong?:number,
-  isInitial:number,
-  isFinal:number
-}
-
+import { Sidebar } from "../../components/SideBar";
+import RouteSetUp from '../../components/RouteSetUp/Index';
+import DriverSelect, { UserType } from '../../components/DriverSelect';
 
 export function Dashboard() {
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<Inputs>();
-  const onSubmit: SubmitHandler<Inputs> = (data) => {
-    data.city = location.city;
-    data.state = location.principalSubdivision;
-    console.log(locationArray);
-    reset({
-      city: '',
-      state: ''
-    });
-  };
+  const usersExample: UserType[] = [
+    { id: "a6004dcb-f6d3-42b6-9b21-30cc58a01558", username: "Kafuri", password: "$2a$08$5V9xVCau/3xxNj36oVfPUO2Jo4lDOqPP95rW7zQGrDlkEUxzM/KSe", email: "kafurimatheus@gmail.com", isDriver: true, isAdmin: true, isEnterprise: true, created_at: "2022-03-23 11:48:23.665166", avatar: "https://github.com/matheuskafuri.png" },
+    { id: "de1098d3-6502-48bd-aeb0-9f3b9e216a17", username: "Matheus", password: "$2a$08$3Es0BJ8oy8EaGUCme7XlDuCe4TVceK5.rndg8KRtI.urM02f0AJfe", email: "matheus10.rk@gmail.com", isDriver: true, isAdmin: false, isEnterprise: false, created_at: "2022-03-23 00:14:25.347937", avatar: "https://github.com/matheuskafuri.png" },
+    { id: "5b2a6ffa-8cb8-4261-b4e9-08ebf3ec16c4", username: "Felipe", password: "$2a$08$DLhSCE01o/8ZRcuVwvmS7OMXbrgQwWMaLGJ.RXFukd5ivkxoP0ZOy", email: "felipe11.rk@gmail.com", isDriver: false, isAdmin: false, isEnterprise: false, created_at: "2022-03-23 15:15:18.087737", avatar: "https://github.com/matheuskafuri.png" },
+    { id: "4f80046d-0358-4800-bd5f-5671f366798d", username: "Jonas", password: "$2a$08$2j2cVovj2nqnxWlqvRaDJOFIVCqgylEHJlftrwFzob6rZa9scjnzO", email: "candida.kafuri@gmail.com", isDriver: false, isAdmin: false, isEnterprise: false, created_at: "2022-03-23 15:17:05.668655", avatar: "https://github.com/matheuskafuri.png" },
+  ]
 
-  const { location } = useLocationInfo();
-  const [locationArray, setLocationArray] = useState<LocationInfo[]>([]);
+  const { route } = useRouteInfo();
 
-  const handleAddPath = (location: LocationInfo) => {
-    setLocationArray([...locationArray, location]);
-  }
+  const [users, setUsers] = useState<UserType[]>([]);
+  const [drivers, setDrivers] = useState<UserType[]>([]);
 
-  const handleDeletePath = (location: LocationInfo) => {
-    setLocationArray(locationArray.filter(item => item !== location));
-  }
-
-  // const generateRoutes = (locationArray: LocationInfo[]) {
-  //   let routeArray: RouteData[] = [];
-  //   locationArray.forEach((location, index) => {
-  //     if (index === 0) {
-  //       routeArray.push({
-  //         route_id: "",
-  //         initLat: location.latitude,
-  //         finalLat: locationArray[index + 1].latitude,
-  //         initLong: location.longitude,
-  //         finalLong: locationArray[index + 1].longitude,
-  //         isInitial: 1,
-  //         isFinal: 0
-  //       });
-  //     } else if (index === locationArray.length - 1) {
-  //       routeArray.push({
-  //         route_id: "",
-  //         initLat: location.latitude,
-  //         initLong: location.longitude,
-  //         isInitial: 0,
-  //         isFinal: 1
-  //       });
-  //     } else {
-  //       routeArray.push({
-  //         route_id: "",
-  //         initLat: location.latitude,
-  //         finalLat: locationArray[index + 1].latitude,
-  //         initLong: location.longitude,
-  //         finalLong: locationArray[index + 1].longitude,
-  //         isInitial: 0,
-  //         isFinal: 0
-  //       });
-  //     }
-  //   })
+  // const getUsers = async () => {
+  //   const response = await api.get('/users');
+  //   setUsers(response.data);
   // }
 
-  function handleGenerateNewRouteFields() {
-    handleAddPath(location);
-    reset({
-      city: '',
-      state: ''
-    });
+  const getDrivers = (users: UserType[]) => {
+    const drivers = users.filter(user => user.isDriver);
+    setDrivers(drivers);
   }
+
+  useEffect(() => {
+    // getUsers();
+    setUsers(usersExample);
+    getDrivers(users);
+  }, [])
+
 
   return (
     <ContainerTest maxWidth="xl">
@@ -105,83 +54,19 @@ export function Dashboard() {
           container
           padding={2}
           width="100%"
-          component="form"
-          onSubmit={handleSubmit(onSubmit)}
           spacing={2}
           display="flex"
           justifyContent="center"
           alignItems="center"
         >
-          <Grid item xs={2} >
-            <Button variant="contained" size='large' onClick={handleGenerateNewRouteFields} style={{ marginRight: "4px" }}>
-              <AddLocationIcon />
-            </Button>
-          </Grid>
-          <Grid item xs={4} >
-            <TextField
-              label="Cidade"
-              variant="filled"
-              {...register("city")}
-              error={errors.city ? true : false}
-              value={location.city}
-            />
-          </Grid>
-          <Grid item xs={4} >
-            <TextField
-              label="Estado"
-              {...register("state")}
-              variant="filled"
-              error={errors.state ? true : false}
-              value={location.principalSubdivision}
-            />
-          </Grid>
-          {locationArray.length >= 1 ?
-          <Grid
-            container
-            spacing={2}
-            paddingX={4}
-            style={{ marginTop: "20px" }}
-          >
-            <h2>Sua Rota Atual</h2>
-          </Grid>
-          : null}
-        {locationArray.map((location, index) => (
-          <Grid
-            container
-            padding={2}
-            width="100%"
-            key={index}
-            spacing={2}
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-          >
-            <Grid item xs={2} >
-              <Button
-                variant="contained"
-                size='large'
-                onClick={() => {
-                  handleDeletePath(location);
-                }}
-                style={{ marginRight: "4px", backgroundColor: "#DC143C" }}>
-                <DeleteIcon />
-              </Button>
-
-            </Grid>
-            <Grid item xs={4} >
-              <TextField label={`${location.city}`} variant="filled" disabled />
-            </Grid>
-            <Grid item xs={4} >
-              <TextField label={`${location.principalSubdivision}`} variant="filled" disabled />
-            </Grid>
-
-          </Grid>
-        ))
-        }
-          <Grid item xs={12} display="flex" justifyContent="center" style={{ marginTop: "20px", height: "60px"}}>
-            <Button variant="contained" type="submit" size="large">Finalizar Rota</Button>
+          <Grid item xs={12}>
+            {drivers ?
+              <DriverSelect drivers={drivers} /> :
+              <CircularProgress />
+            }
           </Grid>
         </Grid>
+        { route.id ? <RouteSetUp /> : null }
       </FormContainer>
       <MapBox>
         <Map />
@@ -189,3 +74,4 @@ export function Dashboard() {
     </ContainerTest>
   )
 }
+
