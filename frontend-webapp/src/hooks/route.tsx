@@ -3,6 +3,12 @@ import React, { createContext, useCallback, useContext, useState } from 'react';
 
 export interface RouteInfo {
     id: string;
+    driver_id: string;
+    enterprise_id: string;
+    initialDate: Date;
+    expectedEnd?: Date;
+    isFinished: boolean;
+
 }
 
 interface RouteContextData {

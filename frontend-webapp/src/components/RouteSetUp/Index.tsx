@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Button, Grid, TextField } from '@mui/material';
+import { Button, Grid, List, Paper, TextField } from '@mui/material';
 import AddLocationIcon from '@mui/icons-material/AddLocation';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
 import { LocationInfo, useLocationInfo } from '../../hooks/location';
-import { RouteInfo, useRouteInfo } from '../../hooks/route';
+import { useRouteInfo } from '../../hooks/route';
 
 import { api } from '../../service';
 
@@ -15,14 +15,17 @@ type Inputs = {
     state: string;
 };
 
-type RouteData = {
+export type RouteData = {
     route_id: string,
     initLat: number,
     finalLat?: number,
     initLong: number,
     finalLong?: number,
-    isInitial: number,
-    isFinal: number
+    isInitial: boolean,
+    isFinal: boolean,
+    isComplete: boolean,
+    city_name: string,
+    state: string,
 }
 
 export default function RouteSetUp() {
@@ -71,16 +74,22 @@ export default function RouteSetUp() {
                     finalLat: locationArray[index + 1].latitude,
                     initLong: location.longitude,
                     finalLong: locationArray[index + 1].longitude,
-                    isInitial: 1,
-                    isFinal: 0
+                    isInitial: true,
+                    isFinal: false,
+                    isComplete: false,
+                    city_name: location.city,
+                    state: location.principalSubdivision
                 });
             } else if (index === locationArray.length - 1) {
                 routesArray.push({
                     route_id: route.id,
                     initLat: location.latitude,
                     initLong: location.longitude,
-                    isInitial: 0,
-                    isFinal: 1
+                    isInitial: false,
+                    isFinal: true,
+                    isComplete: false,
+                    city_name: location.city,
+                    state: location.principalSubdivision
                 });
             } else {
                 routesArray.push({
@@ -89,8 +98,11 @@ export default function RouteSetUp() {
                     finalLat: locationArray[index + 1].latitude,
                     initLong: location.longitude,
                     finalLong: locationArray[index + 1].longitude,
-                    isInitial: 0,
-                    isFinal: 0
+                    isInitial: false,
+                    isFinal: false,
+                    isComplete: false,
+                    city_name: location.city,
+                    state: location.principalSubdivision
                 });
             }
         })
@@ -107,7 +119,10 @@ export default function RouteSetUp() {
                 initLong: route.initLong,
                 finalLong: route.finalLong,
                 isInitial: route.isInitial,
-                isFinal: route.isFinal
+                isFinal: route.isFinal,
+                isComplete: route.isComplete,
+                city_name: route.city_name,
+                state: route.state
             }
         );
     }, []);
@@ -177,39 +192,44 @@ export default function RouteSetUp() {
                     <h2>Sua Rota Atual</h2>
                 </Grid>
                 : null}
-            {locationArray.map((location, index) => (
-                <Grid
-                    container
-                    padding={2}
-                    width="100%"
-                    key={index}
-                    spacing={2}
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                >
-                    <Grid item xs={2} >
-                        <Button
-                            variant="contained"
-                            size='large'
-                            onClick={() => {
-                                handleDeletePath(location);
-                            }}
-                            style={{ marginRight: "4px", backgroundColor: "#DC143C" }}>
-                            <DeleteIcon />
-                        </Button>
+            <Paper style={{ maxHeight: 280, overflow: 'auto', backgroundColor: '#e7e7ee', border: '1px solid #1762b8'}}>
+                {locationArray.map((location, index) => (
+                    <List >
+                        <Grid
+                            container
+                            padding={2}
+                            width="100%"
+                            key={index}
+                            spacing={2}
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                        >
+                            <Grid item xs={2} >
+                                <Button
+                                    variant="contained"
+                                    size='large'
+                                    onClick={() => {
+                                        handleDeletePath(location);
+                                    }}
+                                    style={{ marginRight: "4px", backgroundColor: "#DC143C" }}>
+                                    <DeleteIcon />
+                                </Button>
 
-                    </Grid>
-                    <Grid item xs={4} >
-                        <TextField label={`${location.city}`} variant="filled" disabled />
-                    </Grid>
-                    <Grid item xs={4} >
-                        <TextField label={`${location.principalSubdivision}`} variant="filled" disabled />
-                    </Grid>
+                            </Grid>
+                            <Grid item xs={4} >
+                                <TextField label={`${location.city}`} variant="filled" disabled />
+                            </Grid>
+                            <Grid item xs={4} >
+                                <TextField label={`${location.principalSubdivision}`} variant="filled" disabled />
+                            </Grid>
 
-                </Grid>
-            ))
-            }
+                        </Grid>
+
+                    </List>
+                ))
+                }
+            </Paper>
             <Grid item xs={12} display="flex" justifyContent="center" style={{ marginTop: "20px", height: "60px" }}>
                 <Button variant="contained" type="submit" size="large">Finalizar Rota</Button>
             </Grid>
